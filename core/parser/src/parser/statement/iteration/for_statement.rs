@@ -173,7 +173,11 @@ where
                     && let ForLoopInitializer::Expression(ast::Expression::Identifier(ident)) = init
                     && ident.sym() == Sym::LET
                 {
-                    return Err(Error::general("unexpected token", position));
+                    return Err(Error::unexpected(
+                        "let",
+                        ident.span(),
+                        "for-of loop cannot have 'let' as the loop variable",
+                    ));
                 }
 
                 if init_is_async_of

@@ -10,23 +10,14 @@ pub(crate) enum FormalParameterListOrExpression {
 }
 
 impl FormalParameterListOrExpression {
-    pub(crate) fn expect_expression(self) -> ast::Expression {
-        match self {
-            FormalParameterListOrExpression::Expression(expr) => expr,
-            FormalParameterListOrExpression::FormalParameterList { .. } => {
-                panic!("Unexpected arrow-function arguments");
-            }
-        }
-    }
-
     pub(crate) fn try_into_expression(self) -> ParseResult<ast::Expression> {
         match self {
             FormalParameterListOrExpression::Expression(expr) => Ok(expr),
             FormalParameterListOrExpression::FormalParameterList { span_start, .. } => {
-                Err(Error::General {
-                    message: "invalid arrow-function arguments (parentheses around the arrow-function may help)".into(),
-                    position: span_start,
-                })
+                Err(Error::general(
+                    "invalid arrow-function arguments (parentheses around the arrow-function may help)",
+                    span_start,
+                ))
             }
         }
     }
