@@ -955,6 +955,8 @@ impl Array {
         let callback = args.get_or_undefined(0).as_callable().ok_or_else(|| {
             JsNativeError::typ().with_message("Array.prototype.forEach: invalid callback function")
         })?;
+        let this_arg = args.get_or_undefined(1);
+        let o_value: JsValue = o.clone().into();
         // 4. Let k be 0.
         // 5. Repeat, while k < len,
         for k in 0..len {
@@ -965,8 +967,7 @@ impl Array {
             // c.i. Let kValue be ? Get(O, Pk).
             if let Some(k_value) = o.try_get(pk, context)? {
                 // ii. Perform ? Call(callbackfn, thisArg, « kValue, 𝔽(k), O »).
-                let this_arg = args.get_or_undefined(1);
-                callback.call(this_arg, &[k_value, k.into(), o.clone().into()], context)?;
+                callback.call(this_arg, &[k_value, k.into(), o_value.clone()], context)?;
             }
             // d. Set k to k + 1.
         }
@@ -1360,6 +1361,7 @@ impl Array {
         })?;
 
         let this_arg = args.get_or_undefined(1);
+        let o_value: JsValue = o.clone().into();
 
         // 4. Let k be 0.
         // 5. Repeat, while k < len,
@@ -1371,7 +1373,7 @@ impl Array {
             if let Some(k_value) = o.try_get(k, context)? {
                 // ii. Let testResult be ! ToBoolean(? Call(callbackfn, thisArg, « kValue, 𝔽(k), O »)).
                 let test_result = callback
-                    .call(this_arg, &[k_value, k.into(), o.clone().into()], context)?
+                    .call(this_arg, &[k_value, k.into(), o_value.clone()], context)?
                     .to_boolean();
                 // iii. If testResult is false, return false.
                 if !test_result {
@@ -1413,6 +1415,7 @@ impl Array {
         let a = Self::array_species_create(&o, len, context)?;
 
         let this_arg = args.get_or_undefined(1);
+        let o_value: JsValue = o.clone().into();
 
         // 5. Let k be 0.
         // 6. Repeat, while k < len,
@@ -1424,7 +1427,7 @@ impl Array {
             if let Some(k_value) = o.try_get(k, context)? {
                 // ii. Let mappedValue be ? Call(callbackfn, thisArg, « kValue, 𝔽(k), O »).
                 let mapped_value =
-                    callback.call(this_arg, &[k_value, k.into(), o.clone().into()], context)?;
+                    callback.call(this_arg, &[k_value, k.into(), o_value.clone()], context)?;
                 // iii. Perform ? CreateDataPropertyOrThrow(A, Pk, mappedValue).
                 a.create_data_property_or_throw(k, mapped_value, context)?;
             }
@@ -2587,6 +2590,8 @@ impl Array {
             JsNativeError::typ().with_message("Array.prototype.some: callback is not callable")
         })?;
 
+        let this_arg = args.get_or_undefined(1);
+        let o_value: JsValue = o.clone().into();
         // 4. Let k be 0.
         // 5. Repeat, while k < len,
         for k in 0..len {
@@ -2596,9 +2601,8 @@ impl Array {
             // c.i. Let kValue be ? Get(O, Pk).
             if let Some(k_value) = o.try_get(k, context)? {
                 // ii. Let testResult be ! ToBoolean(? Call(callbackfn, thisArg, « kValue, 𝔽(k), O »)).
-                let this_arg = args.get_or_undefined(1);
                 let test_result = callback
-                    .call(this_arg, &[k_value, k.into(), o.clone().into()], context)?
+                    .call(this_arg, &[k_value, k.into(), o_value.clone()], context)?
                     .to_boolean();
                 // iii. If testResult is true, return true.
                 if test_result {
@@ -2865,6 +2869,7 @@ impl Array {
             }
         }
 
+        let o_value: JsValue = o.clone().into();
         // 9. Repeat, while k < len,
         while k < len {
             // a. Let Pk be ! ToString(𝔽(k)).
@@ -2876,7 +2881,7 @@ impl Array {
                 // ii. Set accumulator to ? Call(callbackfn, undefined, « accumulator, kValue, 𝔽(k), O »).
                 accumulator = callback.call(
                     &JsValue::undefined(),
-                    &[accumulator, k_value, k.into(), o.clone().into()],
+                    &[accumulator, k_value, k.into(), o_value.clone()],
                     context,
                 )?;
             }
@@ -2959,6 +2964,7 @@ impl Array {
             }
         }
 
+        let o_value: JsValue = o.clone().into();
         // 9. Repeat, while k ≥ 0,
         while k >= 0 {
             // a. Let Pk be ! ToString(𝔽(k)).
@@ -2970,7 +2976,7 @@ impl Array {
                 // ii. Set accumulator to ? Call(callbackfn, undefined, « accumulator, kValue, 𝔽(k), O »).
                 accumulator = callback.call(
                     &JsValue::undefined(),
-                    &[accumulator.clone(), k_value, k.into(), o.clone().into()],
+                    &[accumulator.clone(), k_value, k.into(), o_value.clone()],
                     context,
                 )?;
             }
@@ -3394,6 +3400,7 @@ pub(crate) fn find_via_predicate(
         Direction::Descending => itertools::Either::Right((0..len).rev()),
     };
 
+    let o_value: JsValue = o.clone().into();
     // 4. For each integer k of indices, do
     for k in indices {
         // a. Let Pk be ! ToString(𝔽(k)).
@@ -3407,7 +3414,7 @@ pub(crate) fn find_via_predicate(
         let test_result = predicate
             .call(
                 this_arg,
-                &[k_value.clone(), k.into(), o.clone().into()],
+                &[k_value.clone(), k.into(), o_value.clone()],
                 context,
             )?
             .to_boolean();
