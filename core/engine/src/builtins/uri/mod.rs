@@ -384,7 +384,9 @@ where
         }
 
         // b. Let C be the code unit at index k within string.
-        let c = string.code_point_at(k).as_u32() as u16;
+        let c = string
+            .code_unit_at(k)
+            .expect("k is a valid index into string");
 
         // c. If C is not the code unit 0x0025 (PERCENT SIGN), then
         #[allow(clippy::if_not_else)]
