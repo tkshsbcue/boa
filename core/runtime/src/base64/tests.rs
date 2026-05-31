@@ -100,6 +100,60 @@ fn btoa_throws_on_non_latin1() {
 }
 
 #[test]
+fn btoa_error_is_proper_error_object() {
+    let context = &mut Context::default();
+    crate::base64::register(None, context).unwrap();
+
+    run_test_actions_with(
+        [TestAction::run(indoc! {r#"
+            var caught;
+            try {
+                btoa("\u{2713}");
+            } catch (e) {
+                caught = e;
+            }
+            if (typeof caught !== "object") {
+                throw new Error("btoa should throw an object, got: " + typeof caught);
+            }
+            if (!(caught instanceof Error)) {
+                throw new Error("btoa error should be an Error instance");
+            }
+            if (caught.name !== "InvalidCharacterError") {
+                throw new Error("Expected name InvalidCharacterError, got: " + caught.name);
+            }
+            if (typeof caught.message !== "string" || caught.message.length === 0) {
+                throw new Error("btoa error should have a non-empty message");
+            }
+        "#})],
+        context,
+    );
+}
+
+#[test]
+fn atob_error_is_proper_error_object() {
+    let context = &mut Context::default();
+    crate::base64::register(None, context).unwrap();
+
+    run_test_actions_with(
+        [TestAction::run(indoc! {r#"
+            var caught;
+            try {
+                atob("!!!!");
+            } catch (e) {
+                caught = e;
+            }
+            if (!(caught instanceof Error)) {
+                throw new Error("atob error should be an Error instance");
+            }
+            if (caught.name !== "InvalidCharacterError") {
+                throw new Error("Expected name InvalidCharacterError, got: " + caught.name);
+            }
+        "#})],
+        context,
+    );
+}
+
+#[test]
 fn atob_throws_on_invalid_input() {
     let context = &mut Context::default();
     crate::base64::register(None, context).unwrap();
